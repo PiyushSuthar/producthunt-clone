@@ -3,10 +3,11 @@ require("dotenv").config()
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
+const cookieParser = require("cookie-parser")
 
 // Routes
 const authRoutes = require('./routes/auth')
-const cookieParser = require("cookie-parser")
+const userRoutes = require('./routes/user')
 
 // DB Connection
 mongoose.connect(process.env.DATABASE_URL,{
@@ -25,6 +26,7 @@ app.use(cookieParser())
 
 // Main Routes
 app.use('/api', authRoutes)
+app.use('/api', userRoutes)
 
 // Protected Route Error handler
 app.use((err, req, res,next) => {
