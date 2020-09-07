@@ -90,3 +90,24 @@ exports.isSignedIn = expressJwt({
     userProperty: "auth",
     algorithms: ['HS256']
 })
+
+exports.isAuthenticated = (req, res, next) => {
+    let checker = req.user && req.auth && req.user._id === req.auth._id
+
+    if (!checker) {
+        return res.status(401).json({
+            error: "You're not authorised to do this!"
+        })
+    }
+
+    next()
+}
+
+exports.isAdmin = (req, res, next) => {
+    if(req.user.role === 0){
+        return res.status(400).josn({
+            error: "You're not an Admin!"
+        })
+    }
+    next()
+}

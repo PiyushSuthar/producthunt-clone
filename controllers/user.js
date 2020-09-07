@@ -1,6 +1,6 @@
 const User = require("../models/user");
 
-exports.getUserById = (req, res, next, id) => {
+exports.getUserByUsername = (req, res, next, id) => {
     User.findOne({username: id})
         .exec((err, user) => {
             if (err || !user) {
@@ -26,6 +26,44 @@ exports.getSingleUser = (req, res) => {
 
     res.json(req.user)
 }
+// Get user followers
+exports.getUserFollowers = (req,res) => {
+    User.findById(req.user._id)
+        .populate("followers", "_id username name userImageUrl")
+        .exec((err,user)=> {
+            if(err){
+                return res.status(400).json({
+                    error: "No followers found!"
+                })
+            }
+            if(user.followers.length === 0){
+                return res.status(400).json({
+                    error: "User doesn't have any follower!"
+                })
+            }
+            res.json(user.followers)
+        })
+}
+// Get user following
+exports.getUserFollowing = (req,res) => {
+    User.findById(req.user._id)
+        .populate("following", "_id username name userImageUrl")
+        .exec((err,user)=> {
+            if(err){
+                return res.status(400).json({
+                    error: "No followers found!"
+                })
+            }
+            if(user.followers.length === 0){
+                return res.status(400).json({
+                    error: "User doesn't have any follower!"
+                })
+            }
+            res.json(user.following)
+        })
+}
+
+// Getting all the users!
 exports.getAllUsers = (req, res) => {
     User.find()
         .limit(8)

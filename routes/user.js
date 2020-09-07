@@ -1,29 +1,25 @@
 const express = require('express')
 const router = express.Router()
-const { getUserById, getSingleUser, getAllUsers } = require('../controllers/user')
+const { getSingleUser, getAllUsers, getUserByUsername, getUserFollowers, getUserFollowing } = require('../controllers/user')
+const { isSignedIn, isAuthenticated } = require('../controllers/auth')
 
 // Parmas
-router.param("username", getUserById)
+router.param("username", getUserByUsername)
 
 /**
  * GET ROUTES
  */
 // Getting all the users
-router.get('/users', getAllUsers)
+router.get('/users', isSignedIn, getAllUsers)
 
 // Getting a single user
-router.get('/user/:username', getSingleUser)
+router.get('/user/:username', isSignedIn, getSingleUser)
 
 // Getting user Followers
-router.get('/user/:username/followers')
+router.get('/user/:username/followers', isSignedIn, getUserFollowers)
 
 // Get all the users user is following
-router.get('/user/:username/following')
-
-// Getting user's all Products
-router.get('/user/:username/products')
-
-// Getting user's single product
+router.get('/user/:username/following',isSignedIn, getUserFollowing)
 
 // Updating a User!
 
