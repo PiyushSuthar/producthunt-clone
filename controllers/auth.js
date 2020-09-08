@@ -60,12 +60,13 @@ exports.signin = (req, res) => {
 
         res.cookie("token", token, { expire: new Date() + 9999 })
 
-        const { _id, fullname, email, role, userImageUrl } = user
+        const { _id, fullname, email, role, userImageUrl, username } = user
 
         return res.json({
             token,
             user: {
                 _id,
+                username,
                 name: fullname,
                 email: email,
                 role,
@@ -92,7 +93,7 @@ exports.isSignedIn = expressJwt({
 })
 
 exports.isAuthenticated = (req, res, next) => {
-    let checker = req.user && req.auth && req.user._id === req.auth._id
+    let checker = req.user && req.auth && req.user._id == req.auth._id
 
     if (!checker) {
         return res.status(401).json({

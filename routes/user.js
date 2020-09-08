@@ -1,7 +1,14 @@
 const express = require('express')
 const router = express.Router()
-const { getSingleUser, getAllUsers, getUserByUsername, getUserFollowers, getUserFollowing } = require('../controllers/user')
-const { isSignedIn, isAuthenticated } = require('../controllers/auth')
+const { getSingleUser, 
+    getAllUsers, 
+    getUserByUsername, 
+    getUserFollowers, 
+    getUserFollowing, 
+    updateUser, 
+    followUser, 
+    unFollowUser } = require('../controllers/user')
+const { isSignedIn, isAuthenticated, isAdmin } = require('../controllers/auth')
 
 // Parmas
 router.param("username", getUserByUsername)
@@ -10,21 +17,30 @@ router.param("username", getUserByUsername)
  * GET ROUTES
  */
 // Getting all the users
-router.get('/users', isSignedIn, getAllUsers)
+router.get('/users/:username', isSignedIn, isAdmin, getAllUsers)
 
 // Getting a single user
-router.get('/user/:username', isSignedIn, getSingleUser)
+router.get('/user/:username', getSingleUser)
 
 // Getting user Followers
-router.get('/user/:username/followers', isSignedIn, getUserFollowers)
+router.get('/user/:username/followers', getUserFollowers)
 
 // Get all the users user is following
-router.get('/user/:username/following',isSignedIn, getUserFollowing)
+router.get('/user/:username/following', getUserFollowing)
 
+/**
+ * PUT Routes
+ */
 // Updating a User!
+router.put('/user/:username', isSignedIn, isAuthenticated, updateUser)
 
+// Follow paths
+router.patch('/user/follow/:username', isSignedIn, followUser)
+router.patch('/user/unfollow/:username', isSignedIn, unFollowUser)
+
+/**
+ * DELETE Routes
+ */
 // Deleting a User
-
-// Following a User
 
 module.exports = router
