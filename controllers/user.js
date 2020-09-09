@@ -24,6 +24,7 @@ function parseUser(user) {
     user.comments = undefined
     user.followers = undefined
     user.following = undefined
+    user.products = undefined
     return user
 }
 

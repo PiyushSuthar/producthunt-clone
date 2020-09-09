@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser")
 // Routes
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user')
+const productRoutes = require('./routes/product')
 
 // DB Connection
 mongoose.connect(process.env.DATABASE_URL,{
@@ -27,6 +28,7 @@ app.use(cookieParser())
 // Main Routes
 app.use('/api', authRoutes)
 app.use('/api', userRoutes)
+app.use('/api', productRoutes)
 
 // Protected Route Error handler
 app.use((err, req, res,next) => {

@@ -50,7 +50,7 @@ const userSchema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: "Product"
     }],
-    hunts: [{
+    upvotes: [{
         type: mongoose.Types.ObjectId,
         ref: "Product"
     }],

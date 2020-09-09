@@ -14,11 +14,19 @@ const productSchema = new Schema({
         trim: true,
         maxlength: 2000
     },
+    logo: {
+        type: String,
+        trim: true,
+        required: true
+    },
     creator: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
+    images: [{
+        type: String,
+    }],
     link: {
         type: String,
         required: true
@@ -35,14 +43,28 @@ const productSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Comment"
     }]
+}, { timestamps: true })
+
+
+productSchema.pre("deleteOne", function (next) {
+    const creatorId = this.getQuery()["creator"]
+    const productId = this.getQuery()["_id"]
+    const allTheUpvotes = this.getQuery()["upvotes"]
+    mongoose.model("User").findOneAndUpdate({ _id: creatorId },
+        { $pull: { products: productId } },
+        { useFindAndModify: false },
+        (err, sucess) => {
+            if (err) {
+                next(err)
+                return
+            }
+            allTheUpvotes.forEach(async (id) => {
+                await mongoose.model("User").findByIdAndUpdate(id, { $pull: { upvotes: productId } }, { useFindAndModify: false })
+            })
+            next()
+        })
+
 })
 
-
-
-productSchema.methods = {
-    setUpvoteCount: function(p) {
-        this.upvoteCount = this.upvotes.length
-    }
-}
 
 module.exports = mongoose.model("Product", productSchema)

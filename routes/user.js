@@ -38,9 +38,12 @@ router.put('/user/:username', isSignedIn, isAuthenticated, updateUser)
 router.patch('/user/follow/:username', isSignedIn, followUser)
 router.patch('/user/unfollow/:username', isSignedIn, unFollowUser)
 
-/**
- * DELETE Routes
- */
 // Deleting a User
+/**
+ * No Delete Route.
+ * 
+ * WHY?
+ * Because the dev is Lazy AF!
+ */
 
 module.exports = router
