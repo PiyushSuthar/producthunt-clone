@@ -10,7 +10,8 @@ const {
     createProduct,
     upvoteProduct,
     unupvoteProduct,
-    deleteProduct
+    deleteProduct,
+    updateProduct
 } = require('../controllers/product')
 const { getUserByUsername } = require('../controllers/user')
 const { isAdmin, isAuthenticated, isSignedIn } = require('../controllers/auth')
@@ -40,6 +41,12 @@ router.post("/product/create/:username", isSignedIn, isAuthenticated, [
     check("description", "description have to be atleast 10 characters").isLength(10)
 ], createProduct)
 
+
+/**
+ * PUT Routes
+ */
+// Updating a Product
+router.put("/product/update/:productId/:username", isSignedIn, isAuthenticated, updateProduct)
 
 /**
  * PATCH Routes

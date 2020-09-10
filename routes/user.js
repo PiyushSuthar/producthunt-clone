@@ -7,7 +7,8 @@ const { getSingleUser,
     getUserFollowing, 
     updateUser, 
     followUser, 
-    unFollowUser } = require('../controllers/user')
+    unFollowUser, 
+    deleteUser} = require('../controllers/user')
 const { isSignedIn, isAuthenticated, isAdmin } = require('../controllers/auth')
 
 // Parmas
@@ -40,10 +41,8 @@ router.patch('/user/unfollow/:username', isSignedIn, unFollowUser)
 
 // Deleting a User
 /**
- * No Delete Route.
- * 
- * WHY?
- * Because the dev is Lazy AF!
+ * I hate deleting users, but this is how the world works :(
  */
+router.delete("/user/delete/:username", isSignedIn, isAuthenticated, deleteUser)
 
 module.exports = router

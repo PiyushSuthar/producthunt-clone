@@ -45,26 +45,28 @@ const productSchema = new Schema({
     }]
 }, { timestamps: true })
 
+/**
+ * I'm not able to remove the upvotes from user
+ * TODO: Do it sooner!
+ */
+// productSchema.pre("deleteOne", function (next) {
+//     const creatorId = this.getQuery()["creator"]
+//     const productId = this.getQuery()["_id"]
+//     mongoose.model("User").findOneAndUpdate({ _id: creatorId },
+//         { $pull: { products: productId } },
+//         { useFindAndModify: false },
+//         (err, sucess) => {
+//             if (err) {
+//                 next(err)
+//                 return
+//             }
+//             this.upvotes.array().forEach(async (id) => {
+//                 await mongoose.model("User").findByIdAndUpdate(id, { $pull: { upvotes: productId } }, { useFindAndModify: false })
+//             })
+//             next()
+//         })
 
-productSchema.pre("deleteOne", function (next) {
-    const creatorId = this.getQuery()["creator"]
-    const productId = this.getQuery()["_id"]
-    const allTheUpvotes = this.getQuery()["upvotes"]
-    mongoose.model("User").findOneAndUpdate({ _id: creatorId },
-        { $pull: { products: productId } },
-        { useFindAndModify: false },
-        (err, sucess) => {
-            if (err) {
-                next(err)
-                return
-            }
-            allTheUpvotes.forEach(async (id) => {
-                await mongoose.model("User").findByIdAndUpdate(id, { $pull: { upvotes: productId } }, { useFindAndModify: false })
-            })
-            next()
-        })
-
-})
+// })
 
 
 module.exports = mongoose.model("Product", productSchema)

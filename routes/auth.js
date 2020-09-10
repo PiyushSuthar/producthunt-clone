@@ -21,6 +21,6 @@ router.post('/signin', [
 // SignOUT
 router.get('/signout', signout)
 
+// router.get('/test', isSignedIn, (req,res)=> res.json({err: "helloe"}))
 
-router.get('/test', isSignedIn, (req,res)=> res.json({err: "helloe"}))
 module.exports = router

@@ -53,7 +53,7 @@ exports.getProductsByUsername = (req, res) => {
  */
 // Creating Product
 exports.createProduct = (req, res) => {
-    
+
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         return res.status(422).json({
@@ -61,7 +61,7 @@ exports.createProduct = (req, res) => {
             parram: errors.array()[0].param
         })
     }
-    
+
     const product = new Product(req.body)
     product.save(async (err, createdProduct) => {
         if (err) {
@@ -72,6 +72,27 @@ exports.createProduct = (req, res) => {
         await User.findByIdAndUpdate(req.user._id, { $push: { products: createdProduct._id } }, { useFindAndModify: false })
         return res.json(createdProduct)
     })
+}
+
+/**
+ * PUT Routes
+ */
+// Updating a product
+exports.updateProduct = (req, res) => {
+    Product.findOneAndUpdate(
+        { _id: req.product._id },
+        { $set: req.body },
+        { useFindAndModify: false, new: true })
+        .populate("creator", "_id username name lastname userImageUrl ")
+        .populate("upvotes", "_id username name lastname userImageUrl")
+        .exec((err, product) => {
+            if (err) {
+                return res.status(400).json({
+                    error: "Failed To Update Product! :("
+                })
+            }
+            res.json(product)
+        })
 }
 
 /**
@@ -129,9 +150,9 @@ exports.unupvoteProduct = async (req, res) => {
  * DELETE routes
  */
 
- exports.deleteProduct = async (req,res) => {
+exports.deleteProduct = async (req, res) => {
     try {
-        await Product.deleteOne({_id: req.product._id})
+        await Product.deleteOne({ _id: req.product._id })
         res.json({
             success: true
         })

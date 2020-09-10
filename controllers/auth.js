@@ -93,7 +93,7 @@ exports.isSignedIn = expressJwt({
 })
 
 exports.isAuthenticated = (req, res, next) => {
-    let checker = req.user && req.auth && req.user._id == req.auth._id
+    let checker = req.user && req.auth && req.user._id == req.auth._id || req.user.role > 0
 
     if (!checker) {
         return res.status(401).json({

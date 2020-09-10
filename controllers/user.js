@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Product = require("../models/product")
 
 // Params
 exports.getUserByUsername = (req, res, next, id) => {
@@ -28,6 +29,9 @@ function parseUser(user) {
     return user
 }
 
+/**
+ * GET Routes
+ */
 // Getting a Single User
 exports.getSingleUser = (req, res) => {
     const parsedUser = parseUser(req.user)
@@ -75,7 +79,6 @@ exports.getUserFollowing = (req, res) => {
             })
         })
 }
-
 // Getting all the users!
 exports.getAllUsers = (req, res) => {
     User.find()
@@ -91,6 +94,9 @@ exports.getAllUsers = (req, res) => {
         })
 }
 
+/**
+ * PUT Routes
+ */
 // Updating User
 exports.updateUser = (req, res) => {
     User.findByIdAndUpdate(
@@ -108,6 +114,10 @@ exports.updateUser = (req, res) => {
         }
     )
 }
+
+/**
+ * PATCH Routes
+ */
 // Following user
 exports.followUser = (req, res) => {
     if (req.user._id == req.auth._id) {
@@ -165,4 +175,48 @@ exports.unFollowUser = async (req, res) => {
             error: err
         })
     }
+}
+
+/**
+ * DELETE Routes
+ */
+exports.deleteUser = async (req, res) => {
+    try {
+        // Removing Followers and Following
+        req.user.following.forEach(async followedUser => {
+            await User.findByIdAndUpdate(followedUser, { $pull: { followers: req.user._id }, $inc: { followersCount: -1 } }, { useFindAndModify: false })
+        });
+        req.user.followers.forEach(async followingUser => {
+            await User.findByIdAndUpdate(followingUser, { $pull: { following: req.user._id }, $inc: { followingCount: -1 } }, { useFindAndModify: false })
+        })
+
+        // Deleting Products
+        req.user.products.forEach(async userProduct => {
+            await Product.findByIdAndRemove(userProduct, { useFindAndModify: false })
+        })
+
+        // Removing Upvotes
+        req.user.upvotes.forEach(async upvotedProduct => {
+            await Product.findByIdAndUpdate(upvotedProduct, { $pull: { upvotes: req.user._id }, $inc: { upvoteCount: -1 } }, { useFindAndModify: false })
+        })
+
+        // TODO: Removing Comments!
+
+        // Deleting the user!
+        await User.findByIdAndDelete(req.user._id, { useFindAndModify: false })
+
+        // Logging the user Out!
+        res.clearCookie("token")
+        
+        // Sending Response
+        res.json({
+            success: true
+        })
+    } catch (error) {
+        res.status(400).json({
+            error: true,
+            message: error
+        })
+    }
+
 }
