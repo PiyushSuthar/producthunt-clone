@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 const crypto = require('crypto')
 const { v1: uuidv1 } = require('uuid')
 
+// Schema for USER Model
 const userSchema = new Schema({
     username: {
         type: String,
@@ -73,9 +74,14 @@ const userSchema = new Schema({
     comments: [{
         type: mongoose.Types.ObjectId,
         ref: "Comment"
+    }],
+    commentReplies: [{
+        type: mongoose.Types.ObjectId,
+        ref: "CommentReply"
     }]
 }, { timestamps: true })
 
+// Virtual for password.
 userSchema.virtual("password")
     .set(function (password) {
         this._password = password
@@ -83,7 +89,10 @@ userSchema.virtual("password")
         this.encry_password = this.securePassword(password)
     })
     
-
+// Virtual for Email
+/**
+ * Sets the _email field and Generates Gravatar url for profile image.
+ */
 userSchema.virtual("email")
     .set(function(email) {
         this._email = email
@@ -92,12 +101,14 @@ userSchema.virtual("email")
         return this._email
     })
 
+// Virtual for fullname (Rarely Used anywhere :/ )
 userSchema.virtual("fullname")
     .get(function() {
         return `${this.name} ${this.lastname}`
     })
 
 
+// Methods for UserSchema
 userSchema.methods = {
     authenticate: function (plainPassword) {
         return this.securePassword(plainPassword) === this.encry_password
@@ -119,4 +130,5 @@ userSchema.methods = {
     }
 }
 
+// Exporting Model!
 module.exports = mongoose.model("User", userSchema)

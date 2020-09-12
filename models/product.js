@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+// Product Schema!
 const productSchema = new Schema({
     name: {
         type: String,
@@ -45,28 +46,5 @@ const productSchema = new Schema({
     }]
 }, { timestamps: true })
 
-/**
- * I'm not able to remove the upvotes from user
- * TODO: Do it sooner!
- */
-// productSchema.pre("deleteOne", function (next) {
-//     const creatorId = this.getQuery()["creator"]
-//     const productId = this.getQuery()["_id"]
-//     mongoose.model("User").findOneAndUpdate({ _id: creatorId },
-//         { $pull: { products: productId } },
-//         { useFindAndModify: false },
-//         (err, sucess) => {
-//             if (err) {
-//                 next(err)
-//                 return
-//             }
-//             this.upvotes.array().forEach(async (id) => {
-//                 await mongoose.model("User").findByIdAndUpdate(id, { $pull: { upvotes: productId } }, { useFindAndModify: false })
-//             })
-//             next()
-//         })
-
-// })
-
-
+// Exporting Model
 module.exports = mongoose.model("Product", productSchema)

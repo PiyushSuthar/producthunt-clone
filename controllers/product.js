@@ -7,14 +7,32 @@ exports.getProductById = (req, res, next, id) => {
     Product.findById(id).
         populate("creator", "_id username name lastname userImageUrl ").
         populate("upvotes", "_id username name lastname userImageUrl").
+        populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "user",
+                    select: "_id username name lastname userImageUrl"
+                },
+                {
+                    path: "replies",
+                    populate: {
+                        path: "user",
+                    select: "_id username name lastname userImageUrl"
+                    }
+                }
+            ]
+        }).
         exec((err, product) => {
             if (err) {
                 return res.status(400).json({
-                    error: "Looks like the product is not available! :("
+                    error: "Looks like the product is not available! :(",
+                    message: err
                 })
+            } else {
+                req.product = product
+                next()
             }
-            req.product = product
-            next()
         })
 }
 
@@ -23,20 +41,36 @@ exports.getProductById = (req, res, next, id) => {
  */
 // Get Single Product
 exports.getSingleProduct = (req, res) => {
-    if (req.product) {
-        return res.json(req.product)
-    }
+    res.json(req.product)
 }
 // Get user's products
 exports.getProductsByUsername = (req, res) => {
     if (req.user.products.length > 0) {
         Product.find({ creator: req.user._id }).
             populate("creator", "_id username name lastname userImageUrl ").
+            populate("comments").
             populate("upvotes", "_id username name lastname userImageUrl").
+            populate({
+                path: "comments",
+                populate: [
+                    {
+                        path: "user",
+                        select: "_id username name lastname userImageUrl"
+                    },
+                    {
+                        path: "replies",
+                        populate: {
+                            path: "user",
+                        select: "_id username name lastname userImageUrl"
+                        }
+                    }
+                ]
+            }).
             exec((err, products) => {
                 if (err) {
                     return res.status(400).json({
-                        error: "Can't find what you want!"
+                        error: "Can't find what you want!",
+                        message: err
                     })
                 }
                 return res.json(products)
@@ -62,7 +96,7 @@ exports.createProduct = (req, res) => {
         })
     }
 
-    const product = new Product(req.body)
+    const product = new Product({ ...req.body, creator: req.auth._id })
     product.save(async (err, createdProduct) => {
         if (err) {
             return res.status(400).json({

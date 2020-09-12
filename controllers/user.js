@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Product = require("../models/product")
+const { Comment, CommentReply } = require("../models/comment")
 
 // Params
 exports.getUserByUsername = (req, res, next, id) => {
@@ -201,13 +202,21 @@ exports.deleteUser = async (req, res) => {
         })
 
         // TODO: Removing Comments!
+        req.user.comments.forEach(async comment => {
+            Comment.findByIdAndDelete(comment, { useFindAndModify: false }).exec((err, comment) => {
+                comment.replies.forEach(async reply => {
+                    await CommentReply.findByIdAndDelete(reply, { useFindAndModify: false })
+                    await User.findOneAndUpdate({ commentReplies: reply }, { $pull: { commentReplies: reply } }, { useFindAndModify: false })
+                })
+            })
+        })
 
         // Deleting the user!
         await User.findByIdAndDelete(req.user._id, { useFindAndModify: false })
 
         // Logging the user Out!
         res.clearCookie("token")
-        
+
         // Sending Response
         res.json({
             success: true

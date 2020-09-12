@@ -1,39 +1,46 @@
+// ENV Variables for Local use!
 require("dotenv").config()
 
+// Requiring Modules!
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const cookieParser = require("cookie-parser")
 
-// Routes
+// Requiring Routes
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user')
 const productRoutes = require('./routes/product')
+const commentRoutes = require('./routes/comment')
 
-// DB Connection
-mongoose.connect(process.env.DATABASE_URL,{
+// Seting up the DB Connection
+mongoose.connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true
-}).then(()=>{
+}).then(() => {
     console.log("DB CONNECTED")
-}).catch((err)=>{
+}).catch((err) => {
     console.error(err)
 })
 
-// Middle Wares
-app.use(express.json())
-app.use(cookieParser())
+// MiddleWares
+app.use(express.json()) // To parse the sent json
+app.use(cookieParser()) // To controll the cookies
 
 // Main Routes
-app.use('/api', authRoutes)
-app.use('/api', userRoutes)
-app.use('/api', productRoutes)
+app.use('/api', authRoutes) // Authentication Routes
+app.use('/api', userRoutes) // User Routes
+app.use('/api', productRoutes) // Product Routes
+app.use('/api', commentRoutes) // Comment Routes
 
 // Protected Route Error handler
-app.use((err, req, res,next) => {
-	if (err.name === 'UnauthorizedError') {
-		return res.status(401).json({ message: 'Unauthorized. Invalid token!' });
+/**
+ * If there's not token, or the token is expired!
+ */
+app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+        return res.status(401).json({ message: 'Unauthorized. Invalid token!' });
     }
     next()
 });
@@ -42,4 +49,4 @@ app.use((err, req, res,next) => {
 const PORT = process.env.PORT || 3000
 
 // Starting Server
-app.listen(PORT, ()=> console.log(`Server running at port ${PORT}`))
+app.listen(PORT, () => console.log(`Server running at port ${PORT}`))
