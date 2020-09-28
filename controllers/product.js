@@ -48,24 +48,8 @@ exports.getProductsByUsername = (req, res) => {
     if (req.user.products.length > 0) {
         Product.find({ creator: req.user._id }).
             populate("creator", "_id username name lastname userImageUrl ").
-            populate("comments").
             populate("upvotes", "_id username name lastname userImageUrl").
-            populate({
-                path: "comments",
-                populate: [
-                    {
-                        path: "user",
-                        select: "_id username name lastname userImageUrl"
-                    },
-                    {
-                        path: "replies",
-                        populate: {
-                            path: "user",
-                        select: "_id username name lastname userImageUrl"
-                        }
-                    }
-                ]
-            }).
+            select("-comments").
             exec((err, products) => {
                 if (err) {
                     return res.status(400).json({

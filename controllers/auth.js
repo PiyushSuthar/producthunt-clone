@@ -18,7 +18,7 @@ exports.signup = (req, res) => {
         if (err) {
             console.error(err);
             return res.status(400).json({
-                err: "Not able to save the user in DB."
+                error: "Email OR Username is Already Taken!"
             })
         }
         res.json({

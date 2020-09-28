@@ -6,6 +6,7 @@ const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const cookieParser = require("cookie-parser")
+const cors = require("cors")
 
 // Requiring Routes
 const authRoutes = require('./routes/auth')
@@ -27,6 +28,7 @@ mongoose.connect(process.env.DATABASE_URL, {
 // MiddleWares
 app.use(express.json()) // To parse the sent json
 app.use(cookieParser()) // To controll the cookies
+app.use(cors()) // To controll the cookies
 
 // Main Routes
 app.use('/api', authRoutes) // Authentication Routes
@@ -46,7 +48,7 @@ app.use((err, req, res, next) => {
 });
 
 // Port
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 8000
 
 // Starting Server
 app.listen(PORT, () => console.log(`Server running at port ${PORT}`))

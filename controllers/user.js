@@ -5,6 +5,7 @@ const { Comment, CommentReply } = require("../models/comment")
 // Params
 exports.getUserByUsername = (req, res, next, id) => {
     User.findOne({ username: id })
+        .populate("products", "_id name description logo link upvoteCount")
         .exec((err, user) => {
             if (err || !user) {
                 return res.status(400).json({
@@ -24,9 +25,7 @@ function parseUser(user) {
     user.createdAt = undefined
     user.updatedAt = undefined
     user.comments = undefined
-    user.followers = undefined
     user.following = undefined
-    user.products = undefined
     return user
 }
 
