@@ -35,6 +35,7 @@ app.use('/api', authRoutes) // Authentication Routes
 app.use('/api', userRoutes) // User Routes
 app.use('/api', productRoutes) // Product Routes
 app.use('/api', commentRoutes) // Comment Routes
+app.use('/uploads', express.static("uploads")) // Images Route
 
 // Protected Route Error handler
 /**

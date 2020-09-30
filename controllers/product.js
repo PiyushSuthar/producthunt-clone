@@ -1,6 +1,8 @@
 const Product = require('../models/product')
 const User = require('../models/user')
 const { validationResult } = require('express-validator')
+const fs = require('fs')
+const { parseText } = require('./multerMiddleware')
 
 // PARAMS
 exports.getProductById = (req, res, next, id) => {
@@ -18,7 +20,7 @@ exports.getProductById = (req, res, next, id) => {
                     path: "replies",
                     populate: {
                         path: "user",
-                    select: "_id username name lastname userImageUrl"
+                        select: "_id username name lastname userImageUrl"
                     }
                 }
             ]
@@ -69,6 +71,11 @@ exports.getProductsByUsername = (req, res) => {
 /**
  * POST Routes
  */
+/**
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ */
 // Creating Product
 exports.createProduct = (req, res) => {
 
@@ -80,11 +87,12 @@ exports.createProduct = (req, res) => {
         })
     }
 
-    const product = new Product({ ...req.body, creator: req.auth._id })
+    const product = new Product({ ...req.body, creator: req.auth._id, logo: req.files['logo'][0].path, images: [...req.files['images'].map(img => img.path)] })
     product.save(async (err, createdProduct) => {
         if (err) {
             return res.status(400).json({
-                error: "Not able to save the product!"
+                error: "Not able to save the product!",
+                message: err
             })
         }
         await User.findByIdAndUpdate(req.user._id, { $push: { products: createdProduct._id } }, { useFindAndModify: false })
@@ -171,6 +179,9 @@ exports.unupvoteProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         await Product.deleteOne({ _id: req.product._id })
+        if (fs.existsSync(`uploads/${parseText(req.user.username)}/${parseText(req.product.name)}`)) {
+            fs.rmdirSync(`uploads/${parseText(req.user.username)}/${parseText(req.product.name)}`, { recursive: true })
+        }
         res.json({
             success: true
         })

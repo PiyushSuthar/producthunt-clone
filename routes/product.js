@@ -1,6 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const { check } = require('express-validator')
+const multer = require('multer')
+
+// Setting Up Multer
+const { ImageStore } = require('../controllers/multerMiddleware')
+const upload = multer({ storage: ImageStore })
 
 // Controllers
 const {
@@ -35,9 +40,9 @@ router.get("/products/:username", getProductsByUsername)
  */
 // Creating a product!
 router.post("/product/create/:username", isSignedIn, isAuthenticated, [
+    upload.fields([{ name: "logo", maxCount: 1 }, { name: "images", maxCount: 5 }]),
     check("name", "Name should be atleast 3 charc!").isLength(3),
     check("link", "Link must be a URL.").isURL(),
-    check("logo", "Logo is required").notEmpty(),
     check("description", "description have to be atleast 10 characters").isLength(10)
 ], createProduct)
 
@@ -46,7 +51,7 @@ router.post("/product/create/:username", isSignedIn, isAuthenticated, [
  * PUT Routes
  */
 // Updating a Product
-router.put("/product/update/:productId/:username", isSignedIn, isAuthenticated, updateProduct)
+router.put("/product/update/:productId/:username", isSignedIn, isAuthenticated, upload.fields([{ name: "logo", maxCount: 1 }, { name: "images", maxCount: 5 }]), updateProduct)
 
 /**
  * PATCH Routes
