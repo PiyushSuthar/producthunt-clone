@@ -3,6 +3,7 @@ const User = require('../models/user')
 const { validationResult } = require('express-validator')
 const fs = require('fs')
 const { parseText } = require('./multerMiddleware')
+const { paginationForApi } = require('../Utlis')
 
 // PARAMS
 exports.getProductById = (req, res, next, id) => {
@@ -67,6 +68,25 @@ exports.getProductsByUsername = (req, res) => {
         })
     }
 }
+// Get products for homepage
+exports.getProductsForHome = (req, res) => {
+    const { pageNo, perPage } = paginationForApi(req)
+
+    Product.find()
+        .sort({ upvotes: 'desc' })
+        .skip(parseInt(pageNo))
+        .limit(parseInt(perPage))
+        .select("_id name description logo link upvoteCount")
+        .exec((err, products) => {
+            if (err) {
+                return res.status(400).json({
+                    error: "Failed to find Products"
+                })
+            }
+            res.json(products)
+        })
+}
+
 
 /**
  * POST Routes
@@ -179,6 +199,9 @@ exports.unupvoteProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         await Product.deleteOne({ _id: req.product._id })
+        req.product.upvotes.map(async user => {
+            await User.findByIdAndUpdate(user._id, { $pull: { upvotes: req.product._id } }, { useFindAndModify: false })
+        })
         if (fs.existsSync(`uploads/${parseText(req.user.username)}/${parseText(req.product.name)}`)) {
             fs.rmdirSync(`uploads/${parseText(req.user.username)}/${parseText(req.product.name)}`, { recursive: true })
         }

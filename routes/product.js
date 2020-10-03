@@ -16,7 +16,8 @@ const {
     upvoteProduct,
     unupvoteProduct,
     deleteProduct,
-    updateProduct
+    updateProduct,
+    getProductsForHome
 } = require('../controllers/product')
 const { getUserByUsername } = require('../controllers/user')
 const { isAdmin, isAuthenticated, isSignedIn } = require('../controllers/auth')
@@ -33,6 +34,9 @@ router.get("/product/:productId", getSingleProduct)
 
 // Get Products by username
 router.get("/products/:username", getProductsByUsername)
+
+// Get Products For Homepage
+router.get("/homepage/products", getProductsForHome)
 
 
 /**
