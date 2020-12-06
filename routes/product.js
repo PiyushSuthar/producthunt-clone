@@ -14,7 +14,6 @@ const {
     getProductsByUsername,
     createProduct,
     upvoteProduct,
-    unupvoteProduct,
     deleteProduct,
     updateProduct,
     getProductsForHome
@@ -62,7 +61,7 @@ router.put("/product/update/:productId/:username", isSignedIn, isAuthenticated, 
  */
 // UPVOTE Product
 router.patch("/product/upvote/:productId", isSignedIn, upvoteProduct)
-router.patch("/product/unupvote/:productId", isSignedIn, unupvoteProduct)
+// router.patch("/product/unupvote/:productId", isSignedIn, unupvoteProduct)
 
 /**
  * DELETE Routes

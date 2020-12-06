@@ -26,6 +26,8 @@ function parseUser(user) {
     user.updatedAt = undefined
     user.comments = undefined
     user.following = undefined
+    user.followers = undefined
+    user.commentReplies = undefined
     return user
 }
 

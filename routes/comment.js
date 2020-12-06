@@ -3,7 +3,7 @@ const router = express.Router()
 
 const { getProductById } = require('../controllers/product')
 const { isSignedIn, isAuthenticated, isAdmin } = require('../controllers/auth')
-const { createComment, getCommentById, replyToComment } = require('../controllers/comment')
+const { createComment, getCommentById, replyToComment, deleteTheComment, getCommentsByProduct } = require('../controllers/comment')
 
 // Params
 router.param("productId", getProductById)
@@ -12,7 +12,8 @@ router.param("commentId", getCommentById)
 /**
  * GET Routes
  */
-// Looks like GET routes are not needed for Comments. They are populated directly in Products.
+// Getting Comments by Product id, With pagination
+router.get("/comments/product/:productId", getCommentsByProduct)
 
 /**
  * POST Routes
@@ -27,4 +28,8 @@ router.post("/comment/create/:productId", isSignedIn, createComment)
  */
 router.post("/comment/reply/:commentId", isSignedIn, replyToComment)
 
- module.exports = router
+
+// Delete
+router.delete("/comment/delete/:commentId", isSignedIn, deleteTheComment)
+
+module.exports = router

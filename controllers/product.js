@@ -7,27 +7,29 @@ const { paginationForApi } = require('../Utlis')
 
 // PARAMS
 exports.getProductById = (req, res, next, id) => {
+    // populate({
+    //     path: "comments",
+    //     select: "_id replies replyCount comment user",
+    //     populate: [
+    //         {
+    //             path: "user",
+    //             select: "_id username name lastname userImageUrl"
+    //         },
+    //         {
+    //             path: "replies",
+    //             populate: {
+    //                 path: "user",
+    //                 select: "_id username name lastname userImageUrl"
+    //             }
+    //         }
+    //     ]
+    // }).
     Product.findById(id).
         populate("creator", "_id username name lastname userImageUrl ").
         populate("upvotes", "_id username name lastname userImageUrl").
-        populate({
-            path: "comments",
-            populate: [
-                {
-                    path: "user",
-                    select: "_id username name lastname userImageUrl"
-                },
-                {
-                    path: "replies",
-                    populate: {
-                        path: "user",
-                        select: "_id username name lastname userImageUrl"
-                    }
-                }
-            ]
-        }).
+        select("-comments").
         exec((err, product) => {
-            if (err) {
+            if (err || !product) {
                 return res.status(400).json({
                     error: "Looks like the product is not available! :(",
                     message: err
@@ -73,17 +75,26 @@ exports.getProductsForHome = (req, res) => {
     const { pageNo, perPage } = paginationForApi(req)
 
     Product.find()
-        .sort({ upvotes: 'desc' })
+        .sort({ upvoteCount: 'desc' })
         .skip(parseInt(pageNo))
         .limit(parseInt(perPage))
         .select("_id name description logo link upvoteCount")
-        .exec((err, products) => {
+        .exec(async (err, products) => {
             if (err) {
                 return res.status(400).json({
                     error: "Failed to find Products"
                 })
             }
-            res.json(products)
+            const total_products = await Product.estimatedDocumentCount()
+            res.json({
+                products,
+                page_info: {
+                    perpage: parseInt(perPage),
+                    current: parseInt(req.query.page || 1),
+                    total_pages: Math.floor(total_products / perPage) > 0 ? Math.floor(total_products / perPage) : 1,
+                    total_products,
+                }
+            })
         })
 }
 
@@ -146,43 +157,28 @@ exports.updateProduct = (req, res) => {
  */
 // Upvoting the Product
 exports.upvoteProduct = async (req, res) => {
-    if (req.product.upvotes.filter(prod => prod._id == req.auth._id).length > 0) {
-        return res.status(400).json({
-            error: "You have already upvoted the product"
-        })
-    }
-    try {
-        await Product.findByIdAndUpdate(req.product._id, { $push: { upvotes: req.auth._id }, $inc: { upvoteCount: +1 } }, { useFindAndModify: false })
-        await User.findByIdAndUpdate(req.auth._id, { $push: { upvotes: req.product._id } }, { useFindAndModify: false })
-        res.json({
-            success: true,
-            error: false,
-            message: "Upvoted Product Successfully!"
-        })
-    } catch (err) {
-        res.status(400).json({
-            success: false,
-            error: true,
-            message: err
-        })
-    }
-}
-// un Upvoting the Product
-exports.unupvoteProduct = async (req, res) => {
-    if (req.product.upvotes.filter(prod => prod._id == req.auth._id).length === 0) {
-        return res.status(400).json({
-            error: "You have to upvote it to unUpvote!"
-        })
-    }
 
     try {
-        await Product.findByIdAndUpdate(req.product._id, { $pull: { upvotes: req.auth._id }, $inc: { upvoteCount: -1 } }, { useFindAndModify: false })
-        await User.findByIdAndUpdate(req.auth._id, { $pull: { upvotes: req.product._id } }, { useFindAndModify: false })
-        res.json({
-            success: true,
-            error: false,
-            message: "unUpvoted Product Successfully!"
-        })
+        if (req.product.upvotes.filter(prod => prod._id == req.auth._id).length > 0) {
+            await Product.findByIdAndUpdate(req.product._id, { $pull: { upvotes: req.auth._id }, $inc: { upvoteCount: -1 } }, { useFindAndModify: false })
+            await User.findByIdAndUpdate(req.auth._id, { $pull: { upvotes: req.product._id } }, { useFindAndModify: false })
+            res.json({
+                success: true,
+                error: false,
+                message: "unUpvoted Product Successfully!",
+                type: "unupvote"
+            })
+        } else {
+            await Product.findByIdAndUpdate(req.product._id, { $push: { upvotes: req.auth._id }, $inc: { upvoteCount: +1 } }, { useFindAndModify: false })
+            await User.findByIdAndUpdate(req.auth._id, { $push: { upvotes: req.product._id } }, { useFindAndModify: false })
+            res.json({
+                success: true,
+                error: false,
+                message: "Upvoted Product Successfully!",
+                type: "upvote"
+            })
+        }
+
     } catch (err) {
         res.status(400).json({
             success: false,
@@ -191,6 +187,32 @@ exports.unupvoteProduct = async (req, res) => {
         })
     }
 }
+
+// Idea Canceled :||
+// un Upvoting the Product
+// exports.unupvoteProduct = async (req, res) => {
+//     if (req.product.upvotes.filter(prod => prod._id == req.auth._id).length === 0) {
+//         return res.status(400).json({
+//             error: "You have to upvote it to unUpvote!"
+//         })
+//     }
+
+//     try {
+//         await Product.findByIdAndUpdate(req.product._id, { $pull: { upvotes: req.auth._id }, $inc: { upvoteCount: -1 } }, { useFindAndModify: false })
+//         await User.findByIdAndUpdate(req.auth._id, { $pull: { upvotes: req.product._id } }, { useFindAndModify: false })
+//         res.json({
+//             success: true,
+//             error: false,
+//             message: "unUpvoted Product Successfully!"
+//         })
+//     } catch (err) {
+//         res.status(400).json({
+//             success: false,
+//             error: true,
+//             message: err
+//         })
+//     }
+// }
 
 /**
  * DELETE routes
